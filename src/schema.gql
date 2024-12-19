@@ -1,0 +1,94 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Chat {
+  adminsIds: [Float!]
+  chatInfo: ChatInfo!
+  createdAt: DateTime!
+  id: ID!
+  membersIds: [Float!]
+  name: String!
+  tagName: String!
+  updatedAt: DateTime!
+}
+
+type ChatInfo {
+  createdAt: DateTime!
+  id: ID!
+  links: [String!]
+  messages: [Message!]
+  updatedAt: DateTime!
+  urlToFiles: [String!]
+  urlToPhotos: [String!]
+  urlToVideos: [String!]
+  urlToVoiceMessages: [String!]
+}
+
+input CreateChatInput {
+  name: String!
+  startMembersIds: [Float!] = []
+  tagName: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Friend {
+  chatInfo: ChatInfo!
+  createdAt: DateTime!
+  id: ID!
+  updatedAt: DateTime!
+  user: User!
+}
+
+type Message {
+  chatInfo: ChatInfo!
+  createdAt: DateTime!
+  id: ID!
+  sendBy: User!
+  text: String
+  updatedAt: DateTime!
+  urlToFiles: [String!]
+  urlToPhotos: [String!]
+  urlToVideos: [String!]
+}
+
+type Mutation {
+  createChat(createChatData: CreateChatInput!): Chat!
+  createMessage(createMessageData: createMessageInput!): Message!
+}
+
+type Query {
+  getChatMessages(chatId: String!): [Message!]!
+  getChats: [Chat!]!
+  getMessages: [Message!]!
+  getUsers: [User!]!
+}
+
+type User {
+  adminChatsIds: [Float!]
+  bio: String
+  createdAt: DateTime!
+  email: String!
+  friends: [Friend!]!
+  id: ID!
+  lastSeenAt: DateTime!
+  memberChatsIds: [Float!]
+  name: String!
+  online: Boolean!
+  password: String!
+  phone: String!
+  tagName: String!
+  updatedAt: DateTime!
+  urlToAvatar: String
+}
+
+input createMessageInput {
+  text: String
+  urlToFiles: [String!]
+  urlToPhotos: [String!]
+  urlToVideos: [String!]
+}
