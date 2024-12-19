@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
 
+import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { User } from '../user/user.entity';
 import { UserService } from '../user/user.service';
@@ -18,6 +19,7 @@ export class AuthService {
 	constructor(
 		private userService: UserService,
 		private jwtService: JwtService,
+		private configService: ConfigService,
 		@InjectRepository(User) private userRepository: Repository<User>,
 	) {}
 
@@ -59,11 +61,38 @@ export class AuthService {
 		}
 		return this.generateDataToFront(user);
 	}
-	private generateDataToFront(user: User) {
+	private async generateDataToFront(user: User) {
+		const { accessToken, refreshToken } = this.generateTokens(
+			user.id,
+			user.tagName,
+		);
 		return {
-			token: this.jwtService.sign({ id: user.id, tagName: user.tagName }),
+			accessToken,
+			refreshToken,
 			user,
 		};
+	}
+	public generateTokens(id: number, tagName: string) {
+		const payload = { id, tagName };
+		const accessToken = this.jwtService.sign(payload, {
+			secret: this.configService.get('JWT_ACCESS_SECRET'),
+			expiresIn: '1d',
+		});
+		const refreshToken = this.jwtService.sign(payload, {
+			secret: this.configService.get('JWT_REFRESH_SECRET'),
+			expiresIn: '30d',
+		});
+		return { accessToken, refreshToken };
+	}
+
+	public async validateRefreshToken(refreshToken: string) {
+		try {
+			return this.jwtService.verify(refreshToken, {
+				secret: process.env.JWT_REFRESH_SECRET,
+			});
+		} catch (e) {
+			throw new UnauthorizedException('Invalid refresh token');
+		}
 	}
 
 	public async register(registerDTO: RegisterDTO) {

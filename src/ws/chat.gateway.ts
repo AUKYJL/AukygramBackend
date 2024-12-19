@@ -10,7 +10,7 @@ import {
 	WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { WsAuthGuard } from 'src/graphql/modules/auth/guards/wsAuth.guard';
+import { WsAuthGuard } from 'src/graphql/modules/auth/guards/ws-auth.guard';
 import { ChatService } from 'src/graphql/modules/chat/chat.service';
 
 import { User } from 'src/graphql/modules/user/user.entity';

@@ -18,10 +18,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 		TypeOrmModule.forFeature([User]),
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
-			useFactory: (configService: ConfigService) => ({
-				secret: configService.get('JWT_SECRET'),
-				signOptions: { expiresIn: '30d' },
-			}),
+			useFactory: (configService: ConfigService) => ({}),
 			inject: [ConfigService],
 		}),
 	],

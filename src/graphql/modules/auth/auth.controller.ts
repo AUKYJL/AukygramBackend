@@ -27,6 +27,11 @@ export class AuthController {
 	async register(@Body() dto: RegisterDTO) {
 		return this.authService.register(dto);
 	}
+	@Post('refresh')
+	async refresh(@Body() { refreshToken }: { refreshToken: string }) {
+		const payload = await this.authService.validateRefreshToken(refreshToken);
+		return this.authService.generateTokens(payload.id, payload.tagName);
+	}
 
 	@Get('profile')
 	@UseGuards(JwtAuthGuard)
