@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
 
 import { ConfigService } from '@nestjs/config';
+import { Request, Response } from 'express';
 import { Repository } from 'typeorm';
 import { User } from '../user/user.entity';
 import { UserService } from '../user/user.service';
@@ -39,7 +40,7 @@ export class AuthService {
 		throw new UnauthorizedException('user or password are incorrect');
 	}
 
-	public async login(loginDTO: LoginDTO) {
+	public async login(loginDTO: LoginDTO, res: Response) {
 		const { tagName, phone, email, password } = loginDTO;
 		//can get only one field at the same time and password
 		let user: User = null;
@@ -59,18 +60,31 @@ export class AuthService {
 		if (!user) {
 			throw new UnauthorizedException('user or password are incorrect');
 		}
-		return this.generateDataToFront(user);
+		return this.generateDataToFront(user, res);
 	}
-	private async generateDataToFront(user: User) {
+	public logout(res: Response) {
+		res.clearCookie('refreshToken', {
+			httpOnly: true,
+			sameSite: 'strict',
+		});
+
+		return res.json({ message: 'Successfully logged out' });
+	}
+	private async generateDataToFront(user: User, res: Response) {
 		const { accessToken, refreshToken } = this.generateTokens(
 			user.id,
 			user.tagName,
 		);
-		return {
+		res.cookie('refreshToken', refreshToken, {
+			httpOnly: true,
+			sameSite: 'strict',
+			maxAge: 30 * 24 * 60 * 60 * 1000,
+		});
+		return res.json({
 			accessToken,
-			refreshToken,
-			user,
-		};
+			id: user.id,
+			tagName: user.tagName,
+		});
 	}
 	public generateTokens(id: number, tagName: string) {
 		const payload = { id, tagName };
@@ -85,6 +99,31 @@ export class AuthService {
 		return { accessToken, refreshToken };
 	}
 
+	public async refreshTokens(req: Request, res: Response) {
+		const refreshToken = req.cookies?.refreshToken;
+
+		if (!refreshToken) {
+			throw new UnauthorizedException('Refresh token not provided');
+		}
+
+		try {
+			const payload = this.jwtService.verify(refreshToken, {
+				secret: this.configService.get('JWT_REFRESH_SECRET'),
+			});
+
+			const user = await this.userRepository.findOne({
+				where: { id: payload.id },
+			});
+			if (!user) {
+				throw new UnauthorizedException('User not found');
+			}
+
+			return this.generateDataToFront(user, res);
+		} catch (error) {
+			throw new UnauthorizedException('Invalid refresh token');
+		}
+	}
+
 	public async validateRefreshToken(refreshToken: string) {
 		try {
 			return this.jwtService.verify(refreshToken, {
@@ -95,7 +134,7 @@ export class AuthService {
 		}
 	}
 
-	public async register(registerDTO: RegisterDTO) {
+	public async register(registerDTO: RegisterDTO, res: Response) {
 		if (registerDTO.password !== registerDTO.repeatedPassword) {
 			throw new BadRequestException('Passwords must be the same');
 		}
@@ -124,6 +163,6 @@ export class AuthService {
 		}
 
 		const user = await this.userService.create(registerDTO);
-		return this.generateDataToFront(user);
+		return this.generateDataToFront(user, res);
 	}
 }

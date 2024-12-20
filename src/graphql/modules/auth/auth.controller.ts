@@ -3,11 +3,13 @@ import {
 	Controller,
 	Get,
 	Post,
-	Request,
+	Req,
+	Res,
 	UseGuards,
 	UsePipes,
 	ValidationPipe,
 } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDTO } from './dto/loginDTO';
 import { RegisterDTO } from './dto/registerDTO';
@@ -19,23 +21,26 @@ export class AuthController {
 
 	@Post('login')
 	@UsePipes(new ValidationPipe())
-	async login(@Body() dto: LoginDTO) {
-		return this.authService.login(dto);
+	async login(@Body() dto: LoginDTO, @Res() res: Response) {
+		return this.authService.login(dto, res);
+	}
+	@Post('logout')
+	logout(@Res() res: Response) {
+		return this.authService.logout(res);
 	}
 	@Post('register')
 	@UsePipes(new ValidationPipe())
-	async register(@Body() dto: RegisterDTO) {
-		return this.authService.register(dto);
+	async register(@Body() dto: RegisterDTO, @Res() res: Response) {
+		return this.authService.register(dto, res);
 	}
 	@Post('refresh')
-	async refresh(@Body() { refreshToken }: { refreshToken: string }) {
-		const payload = await this.authService.validateRefreshToken(refreshToken);
-		return this.authService.generateTokens(payload.id, payload.tagName);
+	async refresh(@Req() req: Request, @Res() res: Response) {
+		return this.authService.refreshTokens(req, res);
 	}
 
 	@Get('profile')
 	@UseGuards(JwtAuthGuard)
-	getProfile(@Request() req) {
+	getProfile(@Req() req) {
 		return req.user;
 	}
 }
