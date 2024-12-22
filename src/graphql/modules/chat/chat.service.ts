@@ -58,7 +58,7 @@ export class ChatService {
 	public async getMessages(chatId: number) {
 		const chat = await this.chatRepository.findOne({
 			where: { id: chatId },
-			relations: { chatInfo: { messages: true } },
+			relations: { chatInfo: { messages: { sendBy: true, readedBy: true } } },
 		});
 		return chat.chatInfo.messages;
 	}

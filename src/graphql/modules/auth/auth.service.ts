@@ -1,6 +1,7 @@
 import {
 	BadRequestException,
 	Injectable,
+	NotFoundException,
 	UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -37,11 +38,12 @@ export class AuthService {
 		if (user && passwordIsMatch) {
 			return user;
 		}
-		throw new UnauthorizedException('user or password are incorrect');
+		throw new NotFoundException('user or password are incorrect');
 	}
 
 	public async login(loginDTO: LoginDTO, res: Response) {
 		const { tagName, phone, email, password } = loginDTO;
+		console.log(tagName, phone, email, password);
 		//can get only one field at the same time and password
 		let user: User = null;
 		if (phone) {
@@ -57,9 +59,16 @@ export class AuthService {
 				where: { tagName },
 			});
 		}
+
 		if (!user) {
-			throw new UnauthorizedException('user or password are incorrect');
+			throw new NotFoundException('user is incorrect');
 		}
+		user = await this.validateUser(
+			user.tagName,
+			user.phone,
+			user.email,
+			password,
+		);
 		return this.generateDataToFront(user, res);
 	}
 	public logout(res: Response) {
