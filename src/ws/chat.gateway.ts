@@ -44,8 +44,8 @@ export class ChatGateway
 	@UseGuards(WsAuthGuard)
 	@SubscribeMessage(EVENTS.MESSAGE)
 	async handleSendMessage(@MessageBody() data: ISendMessage) {
-		this.server.emit(EVENTS.MESSAGE, data);
-		this.chatService.sendMessage(data);
-		return data;
+		const message = await this.chatService.sendMessage(data);
+		this.server.emit(EVENTS.MESSAGE, message);
+		return message;
 	}
 }

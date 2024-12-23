@@ -60,6 +60,7 @@ export class ChatService {
 		const chat = await this.chatRepository.findOne({
 			where: { id: chatId },
 			relations: { chatInfo: { messages: { sendBy: true, readedBy: true } } },
+			order: { chatInfo: { messages: { createdAt: 'ASC' } } },
 		});
 		return chat.chatInfo.messages;
 	}
@@ -93,7 +94,7 @@ export class ChatService {
 		});
 
 		chat.chatInfo.messages.push(message);
-
-		return await this.chatRepository.save(chat);
+		await this.chatRepository.save(chat);
+		return await this.messageService.getMessageById(message.id);
 	}
 }

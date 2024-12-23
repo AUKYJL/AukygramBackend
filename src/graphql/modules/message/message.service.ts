@@ -22,7 +22,10 @@ export class MessageService {
 	}
 
 	public async getMessageById(id: number) {
-		const message = await this.messageRepository.find({ where: { id } });
+		const message = await this.messageRepository.findOne({
+			where: { id },
+			relations: { sendBy: true, readedBy: true },
+		});
 		if (!message)
 			throw new NotFoundException(`Message with ${id} id doesnt exists`);
 		return message;
