@@ -15,6 +15,7 @@ export class ChatService {
 	constructor(
 		@InjectRepository(Chat) private chatRepository: Repository<Chat>,
 		@InjectRepository(User) private userRepository: Repository<User>,
+
 		private messageService: MessageService,
 	) {}
 
@@ -61,6 +62,14 @@ export class ChatService {
 			relations: { chatInfo: { messages: { sendBy: true, readedBy: true } } },
 		});
 		return chat.chatInfo.messages;
+	}
+	public async getLastMessage(chatId: number) {
+		const chat = await this.chatRepository.findOne({
+			where: { id: chatId },
+			relations: { chatInfo: { messages: { sendBy: true, readedBy: true } } },
+		});
+		console.log(chat);
+		return chat.chatInfo.messages[chat.chatInfo.messages.length - 1];
 	}
 
 	public async sendMessage(data: ISendMessage) {

@@ -24,6 +24,11 @@ export class ChatController {
 	getChatMessages(@Param('chatId') id: string) {
 		return this.chatService.getMessages(+id);
 	}
+	@Get(':chatId/lastMessage')
+	getLastMessage(@Param('chatId') id: string) {
+		return this.chatService.getLastMessage(+id);
+	}
+
 	@Post()
 	@UseGuards(JwtAuthGuard)
 	createChat(@Body() dto: CreateChatDTO, @Req() req) {
