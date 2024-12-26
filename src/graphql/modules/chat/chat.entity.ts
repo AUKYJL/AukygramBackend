@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 
+import { ChatUser } from '../chatUser/chatUser.entity';
 import { Base } from '../shared/entities/base.entity';
 import { ChatInfo } from '../shared/entities/chatInfo.entity';
 
@@ -8,6 +9,9 @@ export class Chat extends Base {
 	@OneToOne(() => ChatInfo, { cascade: true })
 	@JoinColumn()
 	chatInfo: ChatInfo;
+
+	@OneToMany(() => ChatUser, chatUser => chatUser.chat)
+	chatUsers: ChatUser[];
 
 	@Column('int', { array: true, default: [] })
 	memberIds: number[];

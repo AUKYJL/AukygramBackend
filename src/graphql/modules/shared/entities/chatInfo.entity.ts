@@ -8,8 +8,6 @@ export class ChatInfo extends Base {
 	@JoinColumn()
 	messages: Message[];
 
-	//TODO:onetoone lastReadedMessageId ?
-
 	@Column('text', { default: [], array: true })
 	urlToPhotos?: string[];
 

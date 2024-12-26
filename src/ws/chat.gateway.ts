@@ -13,8 +13,9 @@ import { Server, Socket } from 'socket.io';
 import { WsAuthGuard } from 'src/graphql/modules/auth/guards/ws-auth.guard';
 import { ChatService } from 'src/graphql/modules/chat/chat.service';
 
+import { MessageService } from 'src/graphql/modules/message/message.service';
 import { User } from 'src/graphql/modules/user/user.entity';
-import { ISendMessage } from 'src/types/types';
+import { IReadMessage, ISendMessage } from 'src/types/types';
 import { Repository } from 'typeorm';
 import { EVENTS } from './consts';
 
@@ -29,6 +30,7 @@ export class ChatGateway
 {
 	constructor(
 		private chatService: ChatService,
+		private messageService: MessageService,
 		@InjectRepository(User) private userRepository: Repository<User>,
 	) {}
 
@@ -43,9 +45,20 @@ export class ChatGateway
 
 	@UseGuards(WsAuthGuard)
 	@SubscribeMessage(EVENTS.MESSAGE)
-	async handleSendMessage(@MessageBody() data: ISendMessage) {
+	public async handleSendMessage(@MessageBody() data: ISendMessage) {
 		const message = await this.chatService.sendMessage(data);
 		this.server.emit(EVENTS.MESSAGE, message);
+		return message;
+	}
+
+	@UseGuards(WsAuthGuard)
+	@SubscribeMessage(EVENTS.READ_MESSAGE)
+	public async handleReadMessage(@MessageBody() data: IReadMessage) {
+		const message = await this.messageService.addReader(
+			data.readerId,
+			data.messageId,
+		);
+		this.server.emit(EVENTS.READ_MESSAGE, message);
 		return message;
 	}
 }

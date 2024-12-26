@@ -14,6 +14,6 @@ export class UserController {
 	@Get('ownChats')
 	@UseGuards(JwtAuthGuard)
 	getUserChats(@Req() req) {
-		return this.userService.getUserChats(+req.user.id);
+		return this.userService.getUserChatsWithUnreadCount(+req.user.id);
 	}
 }

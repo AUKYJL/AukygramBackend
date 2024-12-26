@@ -1,4 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import {
+	Column,
+	Entity,
+	JoinColumn,
+	JoinTable,
+	ManyToMany,
+	ManyToOne,
+} from 'typeorm';
 import { Base } from '../shared/entities/base.entity';
 import { ChatInfo } from '../shared/entities/chatInfo.entity';
 import { User } from '../user/user.entity';
@@ -12,7 +19,8 @@ export class Message extends Base {
 	@ManyToOne(() => ChatInfo, chat => chat.messages, { cascade: true })
 	chatInfo: ChatInfo;
 
-	@OneToMany(() => User, user => user.readMessages)
+	@ManyToMany(() => User, user => user.readedMessages)
+	@JoinTable()
 	readedBy: User[];
 
 	@Column({ nullable: true })

@@ -23,14 +23,28 @@ export class UserService {
 	public async getUsers() {
 		return await this.userRepository.find();
 	}
-	public async getUserChats(userId: number) {
+	public async getUserChatsWithUnreadCount(userId: number) {
 		const { chatIds } = await this.userRepository.findOne({
 			where: { id: userId },
 		});
 		const chats = await this.chatRepository.find({
 			where: { id: In(chatIds) },
+			relations: {
+				chatUsers: { user: true, chat: true },
+				chatInfo: { messages: { sendBy: true } },
+			},
+			order: { chatInfo: { messages: { createdAt: 'DESC' } } },
 		});
-
-		return chats;
+		const unreadCount = chats.map(
+			chat =>
+				chat.chatInfo.messages.filter(
+					message =>
+						message.sendBy.id !== userId &&
+						message.id >
+							(chat.chatUsers.filter(chatUser => chatUser.user.id === userId)[0]
+								.lastReadMessageId ?? 0),
+				).length,
+		);
+		return { chats, unreadCount };
 	}
 }

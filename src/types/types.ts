@@ -7,3 +7,8 @@ export interface ISendMessage {
 	chatId: number;
 	senderId: number;
 }
+export interface IReadMessage {
+	chatId: number;
+	messageId: number;
+	readerId: number;
+}

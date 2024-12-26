@@ -1,5 +1,6 @@
-import { Column, Entity, ManyToMany, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
 
+import { ChatUser } from '../chatUser/chatUser.entity';
 import { Message } from '../message/message.entity';
 import { Base } from '../shared/entities/base.entity';
 import { Friend } from '../shared/entities/friend.entity';
@@ -12,8 +13,11 @@ export class User extends Base {
 	@ManyToMany(() => Friend, friend => friend.user)
 	friends: Friend[];
 	//   folders:
-	@ManyToOne(() => Message, message => message.readedBy)
-	readMessages: Message[];
+	@ManyToMany(() => Message, message => message.readedBy)
+	readedMessages: Message[];
+
+	@OneToMany(() => ChatUser, chatUser => chatUser.user)
+	chatUsers: ChatUser[];
 
 	@Column()
 	name: string;

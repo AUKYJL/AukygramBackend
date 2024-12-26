@@ -8,6 +8,7 @@ import { S3Service } from './s3.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './graphql/modules/auth/auth.module';
 import { ChatModule } from './graphql/modules/chat/chat.module';
+import { ChatUserModule } from './graphql/modules/chatUser/chatUser.module';
 import { MessageModule } from './graphql/modules/message/message.module';
 import { UserModule } from './graphql/modules/user/user.module';
 import { WSChatModule } from './ws/wsChat.module';
@@ -47,6 +48,7 @@ import { WSChatModule } from './ws/wsChat.module';
 		AuthModule,
 		ChatModule,
 		WSChatModule,
+		ChatUserModule,
 	],
 	controllers: [AppController],
 	providers: [AppService, S3Service],

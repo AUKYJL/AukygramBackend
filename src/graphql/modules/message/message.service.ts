@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
+import { User } from '../user/user.entity';
 import { CreateMessageDTO } from './dto/createMessageDTO';
 import { Message } from './message.entity';
 
@@ -9,7 +10,7 @@ import { Message } from './message.entity';
 export class MessageService {
 	constructor(
 		@InjectRepository(Message) private messageRepository: Repository<Message>,
-		// @InjectRepository(User) private userRepository: Repository<User>,
+		@InjectRepository(User) private userRepository: Repository<User>,
 	) {}
 
 	public async createMessage(createMessageData: CreateMessageDTO) {
@@ -37,6 +38,21 @@ export class MessageService {
 			relations: { sendBy: true },
 		});
 		return msg.sendBy;
+	}
+
+	public async addReader(userId: number, messageId: number) {
+		const message = await this.messageRepository.findOne({
+			where: { id: messageId },
+			relations: { readedBy: true },
+		});
+		const user = await this.userRepository.findOne({
+			where: { id: userId },
+		});
+
+		if (message.readedBy.some(user => user.id === userId)) return message;
+
+		message.readedBy.push(user);
+		return await this.messageRepository.save(message);
 	}
 
 	public async updateMessageById(id: number) {
