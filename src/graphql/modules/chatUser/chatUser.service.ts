@@ -14,13 +14,28 @@ export class ChatUserService {
 	) {}
 
 	public async setLastReadedMessageId(dto: ChatUserCreateDTO) {
-		const chatUser = await this.chatUserRepository.create({
-			user: { id: dto.userId },
-			chat: { id: dto.chatId },
-			lastReadMessageId: dto.messageId,
+		const existingChatUser = await this.chatUserRepository.findOne({
+			where: {
+				user: { id: dto.userId },
+				chat: { id: dto.chatId },
+			},
 		});
-		return await this.chatUserRepository.save(chatUser);
+
+		if (existingChatUser) {
+			console.log(existingChatUser, dto);
+			if (dto.messageId > existingChatUser.lastReadMessageId)
+				existingChatUser.lastReadMessageId = dto.messageId;
+			return await this.chatUserRepository.save(existingChatUser);
+		} else {
+			const newChatUser = this.chatUserRepository.create({
+				user: { id: dto.userId },
+				chat: { id: dto.chatId },
+				lastReadMessageId: dto.messageId,
+			});
+			return await this.chatUserRepository.save(newChatUser);
+		}
 	}
+
 	public async getLastReadedMessageIds(userId: number) {
 		const { chats } =
 			await this.userService.getUserChatsWithUnreadCount(userId);

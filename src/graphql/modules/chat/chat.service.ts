@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ISendMessage, IUserFrontendData } from 'src/types/types';
 
 import { In, Repository } from 'typeorm';
+import { ChatUserService } from '../chatUser/chatUser.service';
 import { MessageService } from '../message/message.service';
 import { ChatInfo } from '../shared/entities/chatInfo.entity';
 import { User } from '../user/user.entity';
@@ -15,6 +16,7 @@ export class ChatService {
 	constructor(
 		@InjectRepository(Chat) private chatRepository: Repository<Chat>,
 		@InjectRepository(User) private userRepository: Repository<User>,
+		private chatUserService: ChatUserService,
 		private messageService: MessageService,
 	) {}
 
@@ -68,7 +70,7 @@ export class ChatService {
 			where: { id: chatId },
 			relations: { chatInfo: { messages: { sendBy: true, readedBy: true } } },
 		});
-		console.log(chat);
+
 		return chat.chatInfo.messages[chat.chatInfo.messages.length - 1];
 	}
 
@@ -76,6 +78,7 @@ export class ChatService {
 		const chat = await this.chatRepository.findOne({
 			where: { id: data.chatId },
 			relations: { chatInfo: { messages: true } },
+			order: { chatInfo: { messages: { createdAt: 'DESC' } } },
 		});
 		if (!chat) {
 			throw new BadRequestException('Chat not found');
@@ -95,5 +98,35 @@ export class ChatService {
 		chat.chatInfo.messages.push(message);
 		await this.chatRepository.save(chat);
 		return await this.messageService.getMessageById(message.id);
+	}
+
+	public async joinChat(userId: number, chatId: number) {
+		const chat = await this.chatRepository.findOne({
+			where: { id: chatId },
+			relations: { chatInfo: { messages: true } },
+		});
+		const user = await this.userRepository.findOne({
+			where: { id: userId },
+		});
+
+		if (!user) {
+			throw new BadRequestException('User not found');
+		}
+
+		if (!chat) {
+			throw new BadRequestException('Chat not found');
+		}
+		if (chat.memberIds.includes(userId)) {
+			throw new BadRequestException('User already in chat');
+		}
+		chat.memberIds.push(userId);
+		this.chatUserService.setLastReadedMessageId({
+			userId,
+			chatId,
+			messageId: chat.chatInfo.messages[0]?.id ?? 0,
+		});
+		await this.chatRepository.save(chat);
+		await this.addChatForUsers(chat.id, [userId]);
+		return chat;
 	}
 }

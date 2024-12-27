@@ -43,7 +43,7 @@ export class AuthService {
 
 	public async login(loginDTO: LoginDTO, res: Response) {
 		const { tagName, phone, email, password } = loginDTO;
-		console.log(tagName, phone, email, password);
+
 		//can get only one field at the same time and password
 		let user: User = null;
 		if (phone) {

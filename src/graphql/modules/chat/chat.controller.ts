@@ -29,6 +29,12 @@ export class ChatController {
 		return this.chatService.getLastMessage(+id);
 	}
 
+	@Post(':chatId/join')
+	@UseGuards(JwtAuthGuard)
+	joinChat(@Param('chatId') id: string, @Req() req) {
+		return this.chatService.joinChat(+req.user.id, +id);
+	}
+
 	@Post()
 	@UseGuards(JwtAuthGuard)
 	createChat(@Body() dto: CreateChatDTO, @Req() req) {
