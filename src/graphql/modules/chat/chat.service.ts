@@ -69,9 +69,10 @@ export class ChatService {
 		const chat = await this.chatRepository.findOne({
 			where: { id: chatId },
 			relations: { chatInfo: { messages: { sendBy: true, readedBy: true } } },
+			order: { chatInfo: { messages: { createdAt: 'DESC' } } },
 		});
 
-		return chat.chatInfo.messages[chat.chatInfo.messages.length - 1];
+		return chat.chatInfo.messages[0];
 	}
 
 	public async sendMessage(data: ISendMessage) {
@@ -104,6 +105,7 @@ export class ChatService {
 		const chat = await this.chatRepository.findOne({
 			where: { id: chatId },
 			relations: { chatInfo: { messages: true } },
+			order: { chatInfo: { messages: { createdAt: 'DESC' } } },
 		});
 		const user = await this.userRepository.findOne({
 			where: { id: userId },

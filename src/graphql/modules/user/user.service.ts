@@ -35,16 +35,55 @@ export class UserService {
 			},
 			order: { chatInfo: { messages: { createdAt: 'DESC' } } },
 		});
+		console.log(
+			'CHATID15 ',
+			chats.filter(chat => chat.id === 15),
+			chats.filter(chat => chat.id === 15)[0].chatUsers,
+			chats
+				.filter(chat => chat.id === 15)[0]
+				.chatInfo.messages.sort((a, b) => b.id - a.id)
+				.slice(0, 5),
+		);
+		console.log(
+			chats.map(chat => {
+				console.log(chat.id);
+			}),
+		);
 		const unreadCount = chats.map(
 			chat =>
-				chat.chatInfo.messages.filter(
-					message =>
+				chat.chatInfo.messages.filter(message => {
+					if (
 						message.sendBy.id !== userId &&
 						message.id >
-							(chat.chatUsers.filter(chatUser => chatUser.user.id === userId)[0]
-								.lastReadMessageId ?? 0),
-				).length,
+							(chat.chatUsers.filter(
+								chatUser =>
+									chatUser.user.id === userId && chat.id === chatUser.chat.id,
+							)[0].lastReadMessageId ?? 0)
+					) {
+						console.log('add unread');
+						console.log(chat.id);
+						console.log(message.id);
+						console.log(
+							chat.chatUsers.filter(
+								chatUser =>
+									chatUser.user.id === userId && chat.id === chatUser.chat.id,
+							),
+						);
+					}
+					return (
+						message.sendBy.id !== userId &&
+						message.id >
+							(chat.chatUsers.filter(
+								chatUser =>
+									chatUser.user.id === userId && chat.id === chatUser.chat.id,
+							)[0].lastReadMessageId ?? 0)
+					);
+				}).length,
 		);
+		//TODO: при прочтении юзер попадает в бд в мессега в readedBy и он типо его прочитал,
+		//  но при этом не обновилось lastReadMessageId
+
+		//и при последующих заходах на фронте он просто не попадает в mark as read потому что он есть в readedBy
 		return { chats, unreadCount };
 	}
 }

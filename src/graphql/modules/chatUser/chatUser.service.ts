@@ -22,7 +22,6 @@ export class ChatUserService {
 		});
 
 		if (existingChatUser) {
-			console.log(existingChatUser, dto);
 			if (dto.messageId > existingChatUser.lastReadMessageId)
 				existingChatUser.lastReadMessageId = dto.messageId;
 			return await this.chatUserRepository.save(existingChatUser);

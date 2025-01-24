@@ -32,6 +32,6 @@ export class ChatUserController {
 		return this.chatUserService.getLastReadedMessageId(+req.user.id, +chatId);
 	}
 
-	// @Get("undreadedCount")
+	// @Get("unreadedCount")
 	//TODO:получить сооб у которых айди больше ластрида и .length = колво непрочитанных
 }
