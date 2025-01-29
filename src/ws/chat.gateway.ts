@@ -59,7 +59,8 @@ export class ChatGateway
 			data.readerId,
 			data.messageId,
 		);
-		this.server.emit(EVENTS.READ_MESSAGE, message);
+		const returnData = { message, chatId: data.chatId };
+		this.server.emit(EVENTS.READ_MESSAGE, returnData);
 		return message;
 	}
 }

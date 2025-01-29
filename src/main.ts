@@ -17,7 +17,7 @@ async function bootstrap() {
 		credentials: true,
 	});
 
-	await app.listen(port || 3000, () => {
+	await app.listen(port || 5002, () => {
 		console.log(`App started on port: ${port}`);
 	});
 }

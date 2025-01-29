@@ -43,7 +43,7 @@ export class MessageService {
 	public async addReader(userId: number, messageId: number) {
 		const message = await this.messageRepository.findOne({
 			where: { id: messageId },
-			relations: { readedBy: true },
+			relations: { readedBy: true, sendBy: true },
 		});
 		const user = await this.userRepository.findOne({
 			where: { id: userId },
